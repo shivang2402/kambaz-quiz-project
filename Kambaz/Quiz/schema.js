@@ -50,7 +50,7 @@ const schema = new mongoose.Schema(
     {
         _id: { type: String },
         title: String,
-        course: { type: mongoose.Schema.Types.ObjectId, ref: "CourseModel" },
+        course: { type: String, ref: "CourseModel" },
         quizType: {
             type: String,
             enum: ["Graded Quiz", "Practice Quiz", "Graded Survey", "Ungraded Survey"], // Extendable types
@@ -62,7 +62,7 @@ const schema = new mongoose.Schema(
         isPublished: { type: Boolean, default: false },
         questions: [questionSchema], // Array of questions
     },
-    { collection: "quizzes" }
+    { collection: "quiz" }
 );
 
 export default schema;

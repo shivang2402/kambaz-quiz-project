@@ -1,9 +1,7 @@
 import * as dao from "./dao.js";
 import * as modulesDao from "../Modules/dao.js"; 
 import * as assignmentsDao from "../Assignments/dao.js";
-
-
-
+import * as quizzesDao from "../Quiz/dao.js";
 
 // Defines routes related to courses
 export default function CourseRoutes(app) {
@@ -72,6 +70,23 @@ app.post("/api/courses/:courseId/assignments", (req, res) => {
   // console.log("hello 2");
   
   res.send(newAssignment);
+});
+
+app.get("/api/courses/:courseId/quizzes", async (req, res) => {
+  const { courseId } = req.params;
+  const quizzes = await quizzesDao.findQuizzesForCourse(courseId);
+  res.json(quizzes);
+});
+app.post("/api/courses/:courseId/quizzes", async (req, res) => {
+  const { courseId } = req.params;
+  console.log("req.body", req.body);
+  const quiz = {
+      ...req.body,
+      course: courseId,
+  };
+  console.log("quiz", quiz);
+  const newQuiz = await quizzesDao.createQuiz(quiz);
+  res.send(newQuiz);
 });
  
 }
