@@ -14,6 +14,21 @@ export default [
       "totalActivity": "10:21:32"
     },
     {
+      "_id": "124",
+      "username": "cap_america",
+      "password": "shield1941",
+      "firstName": "Steve",
+      "lastName": "Rogers",
+      "email": "steve@rogers.com",
+      "dob": "1918-07-04T00:00:00.000Z",
+      "role": "FACULTY",
+      "loginId": "001234562C",
+      "section": "S102",
+      "lastActivity": "2020-10-03",
+      "totalActivity": "08:45:10"
+    },
+    
+    {
       "_id": "234",
       "username": "dark_knight",
       "password": "wayne123",
