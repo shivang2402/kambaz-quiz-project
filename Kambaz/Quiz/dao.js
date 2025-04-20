@@ -21,5 +21,6 @@ export async function findQuizForUser(quizId) {
 
 export async function findQuizById(quizId){
     const quiz = await model.findOne({ _id: quizId });
+    console.log("Full quiz document:", JSON.stringify(quiz, null, 2));
     return quiz;
 }
