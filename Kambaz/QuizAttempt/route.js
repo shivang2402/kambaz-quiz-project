@@ -1,12 +1,56 @@
 import * as quizSubmissionDao from "./dao.js"
-import * as quizzesDao from "../Quizzes/dao.js"
+import * as quizzesDao from "../Quiz/dao.js"
 
 export default function QuizSubmissionRoute(app) {
-    app.post("/api/quizzes/submission", async (req, res) => {
-        const quizAttempt = req.body;
-        console.log(quizAttempt);
-        const quiz = await quizzesDao.findQuizById(quizAttempt.quiz);
-        console.log(quiz);
+    app.post("/api/quizzes/submissions", async (req, res) => {
+
+        const quizAttempt = { ...req.body };
+
+        
+        const existingAttempts = await quizSubmissionDao.findAllQuizAttempt(
+            quizAttempt.quiz,
+            quizAttempt.user
+        );
+
+        console.log("Hi There!")
+        console.log(existingAttempts)
+        console.log(existingAttempts.length)
+
+        if (existingAttempts.length > 0) {
+            return res.status(400).json({ message: "You have already attempted this quiz." });
+        }
+
+        // Fetch quiz metadata to embed
+        const quizDoc = await quizzesDao.findQuizById(quizAttempt.quiz);
+        if (!quizDoc) return res.status(404).send("Quiz not found");
+
+        // Normalize quiz data to make it schema-safe
+        const normalizedQuestions = quizDoc.questions.map(q => ({
+            _id: q._id,
+            title: q.title,
+            question: q.question,
+            points: q.points,
+            type:
+                q.type === "Multiple Choice" ? "mcq" :
+                    q.type === "True / False" ? "tf" :
+                        q.type === "Fill in the Blank" ? "fib" :
+                            q.type, // fallback
+
+            choices: Array.isArray(q.choices)
+                ? q.choices.filter(c => typeof c === "object" && c !== null)
+                : [],
+            possibleAnswers: Array.isArray(q.possibleAnswers) ? q.possibleAnswers : [],
+            answer: q.answer
+        }));
+
+        quizAttempt.quiz = {
+            _id: quizDoc._id,     
+            title: quizDoc.title,
+            course: quizDoc.course,
+            questions: normalizedQuestions
+        };
+
+        const quiz = quizDoc;
         let score = 0
         quiz.questions.forEach((question) => {
             const response = quizAttempt.responses.find(r => r.questionId === question._id.toString());
@@ -46,13 +90,19 @@ export default function QuizSubmissionRoute(app) {
         const courseId = req.body.courseId;
         const userId = req.body.userId;
         const fetchedAttempts = await quizSubmissionDao.findAllQuizAttemptForCourse(courseId, userId);
-        console.log("Fetched Attempts: ",fetchedAttempts);
+        console.log("Fetched Attempts: ", fetchedAttempts);
 
         const latestAttempts = fetchedAttempts.reduce((accumulator, currentAttempt) => {
+            const quizId = currentAttempt.quiz?._id || currentAttempt.quiz?.title || Math.random(); // fallback key
             const currentSubmittedDate = new Date(currentAttempt.submittedAt);
-            if (!accumulator[currentAttempt.quiz] || new Date(accumulator[currentAttempt.quiz].submittedAt) < currentSubmittedDate) {
-                accumulator[currentAttempt.quiz] = currentAttempt; // Update with the more recent attempt
+
+            if (
+                !accumulator[quizId] ||
+                new Date(accumulator[quizId].submittedAt) < currentSubmittedDate
+            ) {
+                accumulator[quizId] = currentAttempt;
             }
+
             return accumulator;
         }, {});
 

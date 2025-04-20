@@ -5,7 +5,7 @@ export function createQuizSubmission(quizSubmission) {
 }
 
 export async function findAllQuizAttempt(quizId, userId) {
-    const data = await model.find({ quiz: quizId, user: userId });
+    const data = await model.find({ "quiz._id": quizId, user: userId });
     console.log(data);
     return data;
 }
